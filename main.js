@@ -15,6 +15,23 @@ const appConfig = require("./config");
 
 let mainWindow;
 
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  // If we don't get the lock, another instance is already running.
+  // Quit this new instance.
+  app.quit();
+} else {
+  // This is the primary instance.
+  app.on("second-instance", (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance. We should focus our window.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  // Continue with app initialization.
 // Navigation function to be passed to the menu template
 function navigateTo(pageId) {
   if (pageId === "home") {
@@ -97,17 +114,20 @@ ipcMain.on("printPage", () => {
   });
 });
 
-app.whenReady().then(createWindow);
+  app.whenReady().then(createWindow);
 
-// Quit when all windows are closed.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
+  // Quit when all windows are closed.
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
 
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+  app.on("activate", () => {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+}
