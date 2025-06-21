@@ -1,5 +1,7 @@
 ﻿# WebToDesk
 
+Original Doc > https://sameeradamith.github.io/webtodesk/
+
 Convert your website to a native desktop application based on the Electron framework.
 
 ![WebToDesk Logo](./build/icon.png)
