@@ -1,21 +1,16 @@
+const { printPage } = require("./menu-helpers");
 
-const { ipcMain } = require("electron");
-
-module.exports = [
+module.exports = (navigate) => [
   {
     label: "WebsiteToDesktop",
     submenu: [
       {
         label: "Home",
-        click: () => {
-          require("./main")("home");
-        },
+        click: () => navigate("home"),
       },
       {
         label: "About",
-        click: () => {
-          require("./main")("about");
-        },
+        click: () => navigate("about"),
       },
       { role: "quit" },
     ],
@@ -37,8 +32,3 @@ module.exports = [
     submenu: [{ role: "reload" }, { role: "zoomIn" }, { role: "zoomOut" }],
   },
 ];
-
-// Print page method
-function printPage() {
-  ipcMain.emit("printPage");
-}

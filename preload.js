@@ -1,47 +1,47 @@
+const { contextBridge, ipcRenderer } = require("electron");
+const appConfig = require("./config"); // This is okay as it's static config
 
-const { ipcRenderer } = require("electron");
-const appConfig = require("./config");
+// Expose a secure API to the renderer process
+contextBridge.exposeInMainWorld("api", {
+  // Function to send messages from renderer to main
+  send: (channel, data) => {
+    // Whitelist channels for security
+    const validChannels = ["online-status-changed"];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+});
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Hidden webpage elements uding ID tags
+  // Hide webpage elements using ID tags
   if (appConfig.hideElementsId.length > 0) {
-    for (
-      let elementsId = 0;
-      elementsId < appConfig.hideElementsId.length;
-      elementsId++
-    ) {
-      let hiddenElementsId = document.getElementById(
-        appConfig.hideElementsId[elementsId]
-      );
-      hiddenElementsId
-        ? (hiddenElementsId.style.display = "none")
-        : console.log;
-    }
+    appConfig.hideElementsId.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.style.display = "none";
+      }
+    });
   }
 
-  // Hidden webpage elements uding Class tags
+  // Hide webpage elements using Class tags
   if (appConfig.hideElementsClass.length > 0) {
-    for (
-      let elementsClass = 0;
-      elementsClass < appConfig.hideElementsClass.length;
-      elementsClass++
-    ) {
-      let hiddenElementsClass = document.getElementsByClassName(
-        appConfig.hideElementsClass[elementsClass]
-      );
-      hiddenElementsClass
-        ? (hiddenElementsClass[0].style.visibility = "hidden")
-        : console.log;
-    }
+    appConfig.hideElementsClass.forEach((className) => {
+      const elements = document.getElementsByClassName(className);
+      // HTMLCollection is live, so iterate over a static copy
+      Array.from(elements).forEach((element) => {
+        element.style.display = "none";
+      });
+    });
   }
 
-  //Change application tiitle
+  // Change application title
   document.title = appConfig["appName"];
 
-  //Error page reload again button press
-  let tryagainbtn = document.getElementById("tryagain");
-  tryagainbtn ? (tryagainbtn.onclick = runc) : false;
-  function runc() {
-    ipcRenderer.send("online-status-changed", true);
+  // Error page reload button press
+  const tryAgainBtn = document.getElementById("tryagain");
+  if (tryAgainBtn) {
+    // Use the new secure API to communicate with the main process
+    tryAgainBtn.onclick = () => window.api.send("online-status-changed", true);
   }
 });

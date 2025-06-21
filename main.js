@@ -8,17 +8,25 @@ const {
   dialog,
 } = require("electron");
 const path = require("path");
-const MainMenuapp = require("./menu-config");
-const RightMenuapp = require("./right-menu-config");
-const PrintOptions = require("./right-menu-config");
+const createMainMenu = require("./menu-config");
+const rightMenuTemplate = require("./right-menu-config");
+const printOptions = require("./print-options.js");
 const appConfig = require("./config");
 
 let mainWindow;
 
-// Menu
-let mainMenu = Menu.buildFromTemplate(MainMenuapp);
+// Navigation function to be passed to the menu template
+function navigateTo(pageId) {
+  if (pageId === "home") {
+    loadWebContent();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, `public/${pageId}.html`));
+  }
+}
 
-let rightMenu = Menu.buildFromTemplate(RightMenuapp);
+// Menu
+const mainMenu = Menu.buildFromTemplate(createMainMenu(navigateTo));
+const rightMenu = Menu.buildFromTemplate(rightMenuTemplate);
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -28,8 +36,9 @@ function createWindow() {
     minHeight: appConfig["minHeight"],
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
-      contextIsolation: false,
+      // Security Best Practices:
+      contextIsolation: true, // Isolate renderer context from preload
+      nodeIntegration: false, // Do not expose Node.js APIs to the renderer
     },
   });
 
@@ -37,7 +46,7 @@ function createWindow() {
   Menu.setApplicationMenu(mainMenu);
 
   //Load Right click menu
-  mainWindow.webContents.on("context-menu", (e) => {
+  mainWindow.webContents.on("context-menu", () => {
     rightMenu.popup(mainWindow);
   });
 
@@ -46,18 +55,18 @@ function createWindow() {
 }
 
 function loadWebContent() {
-  //Loading spalsh screen
+  // Loading splash screen
   mainWindow.loadFile(path.join(__dirname, "public/loading.html"));
 
-  //create webContants
-  let wc = mainWindow.webContents;
+  // Create webContents
+  const wc = mainWindow.webContents;
 
-  //suessfull loding page afer dom created
+  // Successful loading page after dom created
   wc.once("did-finish-load", () => {
     mainWindow.loadURL(appConfig["websiteUrl"]);
   });
 
-  // if not loading page redirect error page
+  // If not loading page, redirect to error page
   wc.on("did-fail-provisional-load", (error, code) => {
     mainWindow.loadFile(path.join(__dirname, "public/offline.html"));
   });
@@ -65,19 +74,18 @@ function loadWebContent() {
 
 // Check website loading error (offline, page not found or etc.)
 ipcMain.on("online-status-changed", (event, status) => {
-  if (status == true) {
+  if (status === true) {
     loadWebContent();
   }
 });
 
 // Print page option
 ipcMain.on("printPage", () => {
-  var options = PrintOptions;
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) return;
 
-  let win = BrowserWindow.getFocusedWindow();
-
-  win.webContents.print(options, (success, failureReason) => {
-    if (!success)
+  win.webContents.print(printOptions, (success, failureReason) => {
+    if (!success) {
       dialog.showMessageBox(mainWindow, {
         message: failureReason.charAt(0).toUpperCase() + failureReason.slice(1),
         type: "error",
@@ -85,17 +93,9 @@ ipcMain.on("printPage", () => {
         defaultId: 0,
         title: "Print Error",
       });
+    }
   });
 });
-
-//Load menuItem local pages (About, Home page, etc)
-module.exports = (pageId) => {
-  if (pageId === "home") {
-    loadWebContent();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, `public/${pageId}.html`));
-  }
-};
 
 app.whenReady().then(createWindow);
 
