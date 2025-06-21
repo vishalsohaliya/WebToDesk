@@ -1,20 +1,36 @@
 {
-  "name": "WebToDesk",
+  "name": "website-to-desktop",
   "version": "1.0.0",
-  "description": "Convert Website to Desktop application",
+  "productName": "WebToDesk",
+  "description": "Convert any Website to Desktop application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "author": "Idriss Boukmouche",
-  "license": "CC0-1.0",
+  "author": {
+    "name": "Vishal Sohaliya",
+    "email": "your-email@example.com"
+  },
+  "license": "MIT",
   "devDependencies": {
-    "electron": "^31.3.1",
-    "electron-builder": "^24.13.3"
+    "electron": "^36.5.0",
+    "electron-builder": "^26.0.12"
   },
   "build": {
+    "appId": "com.vishalsohaliya.webtodesk",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
     }
   }
 }

@@ -1,6 +1,3 @@
-// WebToDesk v2.0.0
-// Idriss Boukmouche
-// boukemoucheidriss@gamil.com
 
 const {
   app,

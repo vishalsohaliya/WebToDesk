@@ -1,12 +1,9 @@
-// WebToDesk v2.0.0
-// Idriss Boukmouche
-// boukemoucheidriss@gamil.com
 
 const { ipcMain } = require("electron");
 
 module.exports = [
   {
-    label: "WebToDesk",
+    label: "WebsiteToDesktop",
     submenu: [
       {
         label: "Home",

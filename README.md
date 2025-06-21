@@ -195,4 +195,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 For any queries or support, please contact:
 
-Email: boukemoucheidriss@gmail.com
+Email: vishalsohaliya@gmail.com
