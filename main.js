@@ -7,11 +7,35 @@ const {
   Menu,
   dialog,
 } = require("electron");
+const fs = require("fs");
 const path = require("path");
 const createMainMenu = require("./menu-config");
 const rightMenuTemplate = require("./right-menu-config");
 const printOptions = require("./print-options.js");
-const appConfig = require("./config");
+
+// --- Dynamic Configuration Loading ---
+const defaultConfig = require("./config"); // Internal fallback config
+
+// Determine the base path. In development, it's the project root.
+// When packaged, it's the directory where the executable is.
+const basePath = app.isPackaged
+  ? path.dirname(app.getPath("exe"))
+  : app.getAppPath();
+
+let appConfig;
+try {
+  // Try to read the external config file that clients will edit
+  const externalConfigPath = path.join(basePath, "config.json");
+  const externalConfigStr = fs.readFileSync(externalConfigPath, "utf8");
+  const externalConfig = JSON.parse(externalConfigStr);
+  // Merge with default to ensure all keys are present
+  appConfig = { ...defaultConfig, ...externalConfig };
+} catch (error) {
+  // If reading/parsing fails (e.g., file not found), use the internal default config
+  console.log("Could not load external config.json, using default. Error:", error.message);
+  appConfig = defaultConfig;
+}
+
 
 let mainWindow;
 
@@ -31,18 +55,52 @@ if (!gotTheLock) {
     }
   });
 
+  // Dialog for "About" menu item
+  function showAboutDialog() {
+    dialog.showMessageBox(mainWindow, {
+      type: "info",
+      title: `About ${appConfig.appName}`,
+      message: `${appConfig.appName} - Version ${appConfig.appVersion}`,
+      detail: appConfig.appDescription,
+      buttons: ["OK"],
+      // For a better UI, you can add an icon.
+      // Ensure you have an icon file at this path.
+      icon: path.join(basePath, appConfig.appIcon),
+    });
+  }
+
+  // Dialog for "Check for Updates" menu item
+  function checkForUpdates() {
+    dialog.showMessageBox(mainWindow, {
+      type: "info",
+      title: "Check for Updates",
+      message: "You are on the latest version.",
+      detail: `${appConfig.appName} ${appConfig.appVersion}`,
+      buttons: ["OK"],
+    });
+  }
+
   // Continue with app initialization.
 // Navigation function to be passed to the menu template
 function navigateTo(pageId) {
   if (pageId === "home") {
     loadWebContent();
   } else {
-    mainWindow.loadFile(path.join(__dirname, `public/${pageId}.html`));
+    // Load custom pages from the external public folder
+    const customPagePath = path.join(basePath, "public", pageId);
+    mainWindow.loadFile(customPagePath);
   }
 }
 
 // Menu
-const mainMenu = Menu.buildFromTemplate(createMainMenu(navigateTo));
+const mainMenu = Menu.buildFromTemplate(
+  createMainMenu({
+      menuConfig: appConfig.menu, // Pass the entire menu structure
+    navigateTo,
+    showAboutDialog,
+    checkForUpdates,
+  })
+);
 const rightMenu = Menu.buildFromTemplate(rightMenuTemplate);
 
 function createWindow() {

@@ -20,6 +20,16 @@
   },
   "build": {
     "appId": "com.vishalsohaliya.webtodesk",
+    "extraFiles": [
+      {
+        "from": "config.json",
+        "to": "config.json"
+      },
+      {
+        "from": "public",
+        "to": "public"
+      }
+    ],
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "build/icon.icns"

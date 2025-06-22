@@ -1,34 +1,17 @@
-
-const config = {
-  // Main Application URL
-  websiteUrl: "https://ignou.samarth.edu.in/index.php/site/login",
-
-  // Application Name
-  appName: "WebsiteToDesktop",
-
-  // Application Version
-  appVersion: "1.0.0",
-
-  // Application Description (for About dialog)
-  appDescription: "A powerful tool to convert your website into a native desktop application.",
-
-  // Path to the app icon (relative to the executable)
-  appIcon: "public/icons/icon.png",
-
-  // Application window width and height
-  width: 1280,
-  height: 800,
-  minWidth: 1280,
-  minHeight: 800,
-
-  // Hide elements by ID
-  hideElementsId: [],
-
-  // Hide elements by Class
-  hideElementsClass: [],
-
-  // Default menu structure
-  menu: [
+{
+  "appName": "WebToDesk",
+  "appVersion": "1.0.0",
+  "appDescription": "A powerful tool to convert your website into a native desktop application.",
+  "appIcon": "public/icons/icon.png",
+  "websiteUrl": "https://ignou.samarth.edu.in/index.php/site/login",
+  "updateUrl": "https://example.com/updates/",
+  "width": 1280,
+  "height": 800,
+  "minWidth": 1280,
+  "minHeight": 800,
+  "hideElementsId": [],
+  "hideElementsClass": [],
+  "menu": [
     {
       "label": "&App",
       "submenu": [
@@ -77,11 +60,11 @@ const config = {
           "label": "Check for Updates",
           "action": "update"
         },
-        { "label": "About", "action": "about" }
+        {
+          "label": "About",
+          "action": "about"
+        }
       ]
     }
   ]
-};
-
-
-module.exports = config;
+}
